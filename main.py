@@ -5,8 +5,7 @@ from tkinter import messagebox
 import os
 os.environ['TKDND_LIBRARY'] = "pytkdnd2.8-win32-x86_64\pytkdnd2.8"
 from untested_tkdnd_wrapper import TkDND 
-from PIL import Image    
-from pydub import AudioSegment     
+from PIL import Image      
 from threading import Thread
 from PIL import ImageTk
 
@@ -124,9 +123,9 @@ def startConvert():
             if fileType=="image":
                 Thread(target=convertImage).start()
             elif fileType=="audio":
-                Thread(target=convertAudio).start()
+                Thread(target=convertAudio_Video).start()
             elif fileType=="video":
-                Thread(target=convertVideo).start()
+                Thread(target=convertAudio_Video).start()
         else:
             status.config(text="Please select output directory")
             return
@@ -134,11 +133,10 @@ def startConvert():
         status.config(text="Please select input file")
         return
 
-def convertAudio():
+def convertAudio_Video():
     global ipfileAddr,ipextension,opDir,opextension
     status.config(text="Converting...")
-    audio=AudioSegment.from_file(ipfileAddr,format=ipextension)
-    audio.export(opDir,format=opextension)
+    os.system(f'cmd /c "ffmpeg -i "{ipfileAddr}" "{opDir}"')
     update_status()
     return
 
@@ -165,12 +163,6 @@ def convertImage():
     update_status()
     return
 
-def convertVideo():
-    global ipfileAddr,ipextension,opDir,opextension
-    status.config(text="Converting...")
-    os.system(f'cmd /c "ffmpeg -i "{ipfileAddr}" "{opDir}"')
-    update_status()
-    return
 
 def handle_dnd(event):
     global ipfileAddr,ipextension
