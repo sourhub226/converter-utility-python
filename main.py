@@ -10,27 +10,32 @@ from pydub import AudioSegment
 from threading import Thread
 from PIL import ImageTk
 
-
-frameWidth=580
-frameHeight=200
-ipfileAddr=ipextension=opDir=opextension=file_name=fileType="null"
+base_color="#fafafa"
+ipfileAddr=ipextension=opDir=opextension=file_name=fileType=None
 
 
 def resetUI():
+    global ipfileAddr,opDir
+    ipfileAddr=opDir=None
     inputBox.delete(0, 'end')
     outputBox.delete(0, 'end')
-    dndframe.create_image(2,2, image = image, anchor = NW)
+    # resize_img(None)
+
+def update_status():
+    print("Converted Successfully")
+    status.config(text="Converted Successfully")
+    resetUI()
 
 def openFile():
     global ipfileAddr,ipextension
-    status.config(text=" ")
     inputBox.delete(0, 'end')
     outputBox.delete(0, 'end')
     ipfileAddr=(filedialog.askopenfile(parent=root,mode='rb',title='Choose a file',filetype=[("All files","*.*")])).name
     inputBox.insert(END,ipfileAddr)
     ipextension=getExtension(ipfileAddr)
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
-
+    if ipfileAddr:
+        status.config(text="Now select output directory")
 
 def getExtension(loc):
     global file_name
@@ -101,34 +106,41 @@ def outpFile():
     file_name = file_name[file_name.find("/"):]
     file_name=file_name[::-1]
     # print(file_name)
-
+    
     base=os.path.basename(ipfileAddr)
     base_name=os.path.splitext(base)[0]
     opDir=(filedialog.asksaveasfilename(parent=root,title='Convert as',filetypes=fileOptions,defaultextension = fileOptions,initialdir=file_name,initialfile=base_name))
     outputBox.insert(END,opDir)
     opextension=getExtension(opDir)
     print(f'Output File: "{opDir}"\nExt: {opextension}')
+    if opDir:
+        status.config(text="Press convert")
 
 def startConvert():
     global ipfileAddr,ipextension,opDir,opextension,fileType
-    print(f"\nConverting from {ipextension} to {opextension}")
-    if fileType=="image":
-        Thread(target=convertImage).start()
-    elif fileType=="audio":
-        Thread(target=convertAudio).start()
-    elif fileType=="video":
-        Thread(target=convertVideo).start()
+    if ipfileAddr:
+        if opDir:
+            print(f"\nConverting from {ipextension} to {opextension}")
+            if fileType=="image":
+                Thread(target=convertImage).start()
+            elif fileType=="audio":
+                Thread(target=convertAudio).start()
+            elif fileType=="video":
+                Thread(target=convertVideo).start()
+        else:
+            status.config(text="Please select output directory")
+            return
+    else:
+        status.config(text="Please select input file")
+        return
 
 def convertAudio():
     global ipfileAddr,ipextension,opDir,opextension
     status.config(text="Converting...")
     audio=AudioSegment.from_file(ipfileAddr,format=ipextension)
     audio.export(opDir,format=opextension)
-    print("converted")
-    status.config(text="Converted Successfully")
-    resetUI()
+    update_status()
     return
-
 
 def convertImage():
     global ipfileAddr,ipextension,opDir,opextension
@@ -150,67 +162,17 @@ def convertImage():
     else:
         image = Image.open(ipfileAddr)
         image.save(opDir)
-    print("Converted Successfully")
-    status.config(text="Converted Successfully")
-    resetUI()
+    update_status()
     return
-
 
 def convertVideo():
     global ipfileAddr,ipextension,opDir,opextension
     status.config(text="Converting...")
     os.system(f'cmd /c "ffmpeg -i "{ipfileAddr}" "{opDir}"')
-    print("converted")
-    status.config(text="Converted Successfully")
-    resetUI()
+    update_status()
     return
 
-
-root = Tk() 
-root.title("Convertor Util (Made by Sourabh Sathe)") 
-root.resizable(False,False)
-pixelVirtual=PhotoImage(width=1,height=1)
-
-
-
-frame=Frame(root,width=frameWidth,height=frameHeight)
-frame.pack()
-
-
-
-
-
-inputLabel=Label(root,text="Input File")
-inputLabel.place(x=10,y=5)
-
-inputBox = Entry(root,width=75)
-root.update()
-inputBox.place(x=inputLabel.winfo_reqwidth()+15,y=5)
-inputBox.focus_set()
-
-browseButton1=Button(root,text="Browse",image=pixelVirtual,compound="c",height=12,command=openFile)
-browseButton1.place(x=inputLabel.winfo_width()+inputBox.winfo_reqwidth()+20,y=5)
-
-
-outputLabel=Label(root,text="Output File")
-outputLabel.place(x=10,y=140)
-
-outputBox = Entry(root,width=73)
-root.update()
-outputBox.place(x=outputLabel.winfo_reqwidth()+15,y=140)
-
-
-browseButton2=Button(root,text="Browse",image=pixelVirtual,compound="c",height=12,command=outpFile)
-browseButton2.place(x=outputLabel.winfo_width()+outputBox.winfo_reqwidth()+20,y=140)
-
-
-dndframe = Canvas(root, width=100,height=100)
-dndframe.place(x=10, y=inputLabel.winfo_reqheight()+10)
-image = PhotoImage(file = "dnd.png")
-dndframe.create_image(2,2, image = image, anchor = NW)
-dnd = TkDND(root)
-  
-def handle(event):
+def handle_dnd(event):
     global ipfileAddr,ipextension
     status.config(text=" ")
     inputBox.delete(0, 'end')
@@ -219,15 +181,70 @@ def handle(event):
     ipfileAddr=inputBox.get()
     ipextension=getExtension(inputBox.get())
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
-    
-
-dnd.bindtarget(dndframe, handle, 'text/uri-list') 
-
-convertButton=Button(root,text="Convert",command=startConvert)
-convertButton.place(x=(frameWidth-convertButton.winfo_reqwidth())/2,y=frameHeight-convertButton.winfo_reqheight()-10)
-
-status=Label(root,text="")
-status.place(x=0,y=frameHeight-convertButton.winfo_reqheight()-3)
+    if ipfileAddr:
+        status.config(text="Now select output directory")
 
 
+root = Tk() 
+root.title("Convertor Utility (Made by Sourabh Sathe)") 
+root.minsize(450,420)
+# root.resizable(False,False)
+root.config(bg=base_color)
+
+top_frame=Frame(root,bg=base_color)
+top_frame.pack(side=TOP,fill=X,padx=10,pady=10)
+
+inputLabel=Label(top_frame,text="Input File",bg=base_color)
+inputLabel.pack(side=LEFT)
+
+inputBox = ttk.Entry(top_frame)
+# root.update()
+inputBox.pack(side=LEFT,fill=X,expand=True,padx=5,ipady=1)
+inputBox.focus_set()
+
+browseButton1=ttk.Button(top_frame,text="Browse",command=openFile)
+browseButton1.pack(side=LEFT)
+
+
+dndframe = Canvas(root, highlightthickness=1, relief='solid',highlightbackground="#c5c5c5")
+dndframe.pack(fill=BOTH,expand=True,padx=10)
+
+dnd = TkDND(root)
+dnd.bindtarget(dndframe, handle_dnd, 'text/uri-list') 
+
+
+bottom_frame=Frame(root,bg=base_color)
+bottom_frame.pack(fill=X,padx=10,pady=10)
+
+outputLabel=Label(bottom_frame,text="Output File",bg=base_color)
+outputLabel.pack(side=LEFT)
+
+outputBox = ttk.Entry(bottom_frame)
+# root.update()
+outputBox.pack(side=LEFT,fill=X,expand=True,padx=5,ipady=1)
+
+browseButton2=ttk.Button(bottom_frame,text="Browse",command=outpFile)
+browseButton2.pack(side=LEFT)
+
+
+convertButton=ttk.Button(root,text="Convert",command=startConvert)
+convertButton.pack()
+
+status=Label(root,text="Begin -> Select input file")
+status.pack(pady=(10,0),fill=X,ipady=1)
+
+
+def resize_img(event):
+    global dnd_image,dndframe
+    if event.height<=event.width:
+        dnd_image=Image.open(r"dnd.png").resize((event.height,event.height), Image.AFFINE)
+        dnd_image = ImageTk.PhotoImage(dnd_image)
+        dndframe.create_image((event.width-event.height)/2,0, image = dnd_image,anchor=NW)
+    else:
+        dnd_image=Image.open(r"dnd.png").resize((event.width,event.width), Image.AFFINE)
+        dnd_image = ImageTk.PhotoImage(dnd_image)
+        dndframe.create_image(0,(event.height-event.width)/2, image = dnd_image,anchor=NW)
+
+
+dndframe.bind("<Configure>",resize_img)
 root.mainloop()  
