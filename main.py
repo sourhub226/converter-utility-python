@@ -31,7 +31,7 @@ def openFile():
     outputBox.delete(0, 'end')
     ipfileAddr=(filedialog.askopenfile(parent=root,mode='rb',title='Choose a file',filetype=[("All files","*.*")])).name
     inputBox.insert(END,ipfileAddr)
-    ipextension=getExtension(ipfileAddr)
+    ipextension=getExtension(ipfileAddr).lower()
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
     if ipfileAddr:
         status.config(text="Now select output directory")
@@ -50,7 +50,7 @@ def outpFile():
     if ipextension=="png":
         fileOptions = [("jpeg files","*.jpg"),("webp files","*.webp"),("ico files","*.ico"),("tiff files","*.tiff"),('All Files', '*.*')]
         fileType="image"
-    elif ipextension=="jpg":
+    elif ipextension=="jpg" or ipextension=="jpeg":
         fileOptions = [("png files","*.png"),("webp files","*.webp"),("tiff files","*.tiff"),('All Files', '*.*')]
         fileType="image"
     elif ipextension=="webp":
@@ -171,7 +171,7 @@ def handle_dnd(event):
     outputBox.delete(0, 'end')
     inputBox.insert(0, (event.data).replace('{',"").replace('}',""))
     ipfileAddr=inputBox.get()
-    ipextension=getExtension(inputBox.get())
+    ipextension=getExtension(inputBox.get()).lower()
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
     if ipfileAddr:
         status.config(text="Now select output directory")
