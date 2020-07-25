@@ -136,7 +136,7 @@ def startConvert():
 def convertAudio_Video():
     global ipfileAddr,ipextension,opDir,opextension
     status.config(text="Converting...")
-    os.system(f'cmd /c "ffmpeg -i "{ipfileAddr}" "{opDir}"')
+    os.system(f'cmd /c ffmpeg -i "{ipfileAddr}" "{opDir}"')
     update_status()
     return
 
