@@ -12,4 +12,4 @@ Conversion made possible using **PIL library** and **ffmpeg**
 * [Pillow module](https://pypi.org/project/Pillow/) (friendly PIL fork by Alex Clark and Contributors)
 
 
-![GUI](https://i.imgur.com/SXY9mAt.png)
+![GUI](preview.PNG)
