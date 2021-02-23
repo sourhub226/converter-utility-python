@@ -3,9 +3,9 @@ This app allows you to convert images, audios and videos from one format to anot
 
 **It also has drag-n-drop support for files.**
 
-GUI made in python using Tkinter module.
+GUI made in python using `Tkinter` module.
 
-Conversion made possible using **PIL library** and **ffmpeg**
+Conversion made possible using `PIL` library and `ffmpeg`
 
 ### Prerequisites 
 * [ffmpeg](https://ffmpeg.org/download.html)
