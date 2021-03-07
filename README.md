@@ -1,3 +1,6 @@
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/sourhub226/converter-utility-python/issues)
+![ViewCount](https://views.whatilearened.today/views/github/sourhub226/converter-utility-python.svg)
+
 # Convertor Utility
 This app allows you to convert images, audios and videos from one format to another.
 
