@@ -3,8 +3,8 @@ from tkinter import filedialog
 from tkinter import ttk 
 from tkinter import messagebox   
 import os
-os.environ['TKDND_LIBRARY'] = "pytkdnd2.8-win32-x86_64\pytkdnd2.8"
-from untested_tkdnd_wrapper import TkDND 
+os.environ['TKDND_LIBRARY'] = "pytkdnd2.8"
+from tkdnd_wrapper import TkDND 
 from PIL import Image      
 from threading import Thread
 from PIL import ImageTk
