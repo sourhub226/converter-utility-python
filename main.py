@@ -53,8 +53,20 @@ def update_status():
     status.config(text="Converted Successfully")
     resetUI()
 
+
+def decide_preview():
+    global ipfileAddr,ipextension,fileType,preview_pic
+    if ipextension=="jpg" or ipextension=="jpeg" or ipextension=="png" or ipextension=="webp" or ipextension=="tiff":
+        fileType="image"
+        preview_pic=ipfileAddr
+        img_preview()
+    elif ipextension=="mp3" or ipextension=="wav" or ipextension=="flac" or ipextension=="ogg":
+        fileType="audio"
+    elif ipextension=="mp4" or ipextension=="avi" or ipextension=="flv" or ipextension=="mov" or ipextension=="mkv" or ipextension=="webm":
+        fileType="video"
+
 def openFile():
-    global ipfileAddr,ipextension,preview_pic
+    global ipfileAddr,ipextension,preview_pic,fileType
     inputBox.delete(0, 'end')
     outputBox.delete(0, 'end')
     ipfileAddr=(filedialog.askopenfile(parent=root,mode='rb',title='Choose a file',filetype=[("All files","*.*")])).name
@@ -63,8 +75,8 @@ def openFile():
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
     if ipfileAddr:
         status.config(text="Now select output directory")
-    preview_pic=ipfileAddr
-    img_preview()
+    decide_preview()
+   
 
 def getExtension(loc):
     global file_name
@@ -77,50 +89,50 @@ def outpFile():
     #image
     if ipextension=="png":
         fileOptions = [("jpeg files","*.jpg"),("webp files","*.webp"),("ico files","*.ico"),("tiff files","*.tiff"),('All Files', '*.*')]
-        fileType="image"
+        
     elif ipextension=="jpg" or ipextension=="jpeg":
         fileOptions = [("png files","*.png"),("webp files","*.webp"),("tiff files","*.tiff"),('All Files', '*.*')]
-        fileType="image"
+        
     elif ipextension=="webp":
         fileOptions = [("png files","*.png"),("jpeg files","*.jpg"),("ico files","*.ico"),("tiff files","*.tiff"),('All Files', '*.*')]
-        fileType="image"
+        
     elif ipextension=="tiff":
         fileOptions = [("png files","*.png"),("jpeg files","*.jpg"),("ico files","*.ico"),("webp files","*.webp"),('All Files', '*.*')]
-        fileType="image"
+        
 
     #audio
     elif ipextension=="mp3":
         fileOptions = [("wav files","*.wav"),("flac files","*.flac"),("ogg files","*.ogg"),('All Files', '*.*')]
-        fileType="audio"
+        
     elif ipextension=="wav":
         fileOptions = [("mp3 files","*.mp3"),("flac files","*.flac"),("ogg files","*.ogg"),('All Files', '*.*')]
-        fileType="audio"
+        
     elif ipextension=="flac":
         fileOptions = [("mp3 files","*.mp3"),("wav files","*.wav"),("ogg files","*.ogg"),('All Files', '*.*')]
-        fileType="audio"
+        
     elif ipextension=="ogg":
         fileOptions = [("mp3 files","*.mp3"),("wav files","*.wav"),("flac files","*.flac"),('All Files', '*.*')]
-        fileType="audio"
+        
 
     #video
     elif ipextension=="mp4":
         fileOptions = [("avi files","*.avi"),("flv files","*.flv"),("mov files","*.mov"),("mp3 files","*.mp3"),("mkv files","*.mkv"),("webm files","*.webm"),('All Files', '*.*')]
-        fileType="video"    
+        
     elif ipextension=="avi":
         fileOptions = [("mp4 files","*.mp4"),("flv files","*.flv"),("mov files","*.mov"),("mkv files","*.mkv"),("webm files","*.webm"),('All Files', '*.*')]
-        fileType="video" 
+        
     elif ipextension=="flv":
         fileOptions = [("mp4 files","*.mp4"),("avi files","*.avi"),("mov files","*.mov"),("mkv files","*.mkv"),("webm files","*.webm"),('All Files', '*.*')]
-        fileType="video" 
+        
     elif ipextension=="mov":
         fileOptions = [("mp4 files","*.mp4"),("avi files","*.avi"),("flv files","*.flv"),("mkv files","*.mkv"),("webm files","*.webm"),('All Files', '*.*')]
-        fileType="video" 
+        
     elif ipextension=="mkv":
         fileOptions = [("mp4 files","*.mp4"),("avi files","*.avi"),("flv files","*.flv"),("mov files","*.mov"),("webm files","*.webm"),('All Files', '*.*')]
-        fileType="video" 
+        
     elif ipextension=="webm":
         fileOptions = [("mp4 files","*.mp4"),("avi files","*.avi"),("flv files","*.flv"),("mov files","*.mov"),("mkv files","*.mkv"),('All Files', '*.*')]
-        fileType="video" 
+        
 
     else:
         messagebox.showerror(title="Error",message="Conversion not possible.\nFile type not supported.")
@@ -202,8 +214,7 @@ def handle_dnd(event):
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
     if ipfileAddr:
         status.config(text="Now select output directory")
-    preview_pic=ipfileAddr
-    img_preview()
+    decide_preview()
 
 
 top_frame=Frame(root,bg=base_color)
