@@ -8,10 +8,16 @@ from tkdnd_wrapper import TkDND
 from PIL import Image      
 from threading import Thread
 from PIL import ImageTk
+from hdpitkinter import HdpiTk
 
 base_color="#fafafa"
 ipfileAddr=ipextension=opDir=opextension=file_name=fileType=None
 
+root = HdpiTk()
+root.title("Convertor Utility") 
+root.minsize(450,420)
+# root.resizable(False,False)
+root.config(bg=base_color)
 
 def resetUI():
     global ipfileAddr,opDir
@@ -177,11 +183,7 @@ def handle_dnd(event):
         status.config(text="Now select output directory")
 
 
-root = Tk() 
-root.title("Convertor Utility (Made by Sourabh Sathe)") 
-root.minsize(450,420)
-# root.resizable(False,False)
-root.config(bg=base_color)
+
 
 top_frame=Frame(root,bg=base_color)
 top_frame.pack(side=TOP,fill=X,padx=10,pady=10)
