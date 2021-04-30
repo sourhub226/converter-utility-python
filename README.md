@@ -13,9 +13,10 @@ GUI made in python using `Tkinter` module.
 Conversion made possible using `PIL` library and `ffmpeg`
 
 ### Prerequisites 
-* [hdpitkinter library](https://pypi.org/project/hdpitkinter/) (For HiDPI display support)
-* [ffmpeg](https://ffmpeg.org/download.html) (Make sure the PATH variable for ffmpeg is set correctly)
-* [Pillow module](https://pypi.org/project/Pillow/) (Friendly PIL fork by Alex Clark and Contributors)
+* [`hdpitkinter` library](https://pypi.org/project/hdpitkinter/) (For HiDPI display support)
+* [`ffmpeg`](https://ffmpeg.org/download.html) (Make sure the PATH variable for ffmpeg is set correctly)
+* [`Pillow` module](https://pypi.org/project/Pillow/) (Friendly PIL fork by Alex Clark and Contributors)
+* [`OpenCV`](https://pypi.org/project/opencv-python/)
 
 
 ![GUI](preview.PNG)
