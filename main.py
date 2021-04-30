@@ -21,12 +21,32 @@ root.minsize(450,420)
 root.resizable(False,False)
 root.config(bg=base_color)
 
+def img_preview():
+    global preview_pic
+    root.update()
+    dnd_image=Image.open(preview_pic)
+    scale=dnd_image.width/dnd_image.height
+
+    if (dnd_image.width > dnd_image.height):
+        img_width=dndframe.winfo_width()
+        img_height=img_width/scale
+    else:
+        img_height=dndframe.winfo_height()
+        img_width=img_height*scale
+
+    dnd_image=dnd_image.resize((int(img_width),int(img_height)), Image.ADAPTIVE)
+    dnd_image = ImageTk.PhotoImage(dnd_image)
+    dndframe.create_image((dndframe.winfo_width()-dnd_image.width())/2,(dndframe.winfo_height()-dnd_image.height())/2, image = dnd_image,anchor=NW)
+    dndframe.image=dnd_image
+
 def resetUI():
-    global ipfileAddr,opDir
+    global ipfileAddr,opDir,preview_pic
     ipfileAddr=opDir=None
     inputBox.delete(0, 'end')
     outputBox.delete(0, 'end')
-    # resize_img(None)
+    preview_pic="dnd.png"
+    img_preview()
+    
 
 def update_status():
     print("Converted Successfully")
@@ -34,7 +54,7 @@ def update_status():
     resetUI()
 
 def openFile():
-    global ipfileAddr,ipextension
+    global ipfileAddr,ipextension,preview_pic
     inputBox.delete(0, 'end')
     outputBox.delete(0, 'end')
     ipfileAddr=(filedialog.askopenfile(parent=root,mode='rb',title='Choose a file',filetype=[("All files","*.*")])).name
@@ -43,13 +63,13 @@ def openFile():
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
     if ipfileAddr:
         status.config(text="Now select output directory")
+    preview_pic=ipfileAddr
+    img_preview()
 
 def getExtension(loc):
     global file_name
     file_name, file_extension = os.path.splitext(loc)
     file_extension=file_extension[1:]
-    # print(file_name)
-    # print(file_extension)
     return file_extension
 
 def outpFile():
@@ -108,11 +128,10 @@ def outpFile():
         return
     outputBox.delete(0, 'end')
     
-    # print(file_name)
+    
     file_name=file_name[::-1]
     file_name = file_name[file_name.find("/"):]
     file_name=file_name[::-1]
-    # print(file_name)
     
     base=os.path.basename(ipfileAddr)
     base_name=os.path.splitext(base)[0]
@@ -173,7 +192,7 @@ def convertImage():
 
 
 def handle_dnd(event):
-    global ipfileAddr,ipextension
+    global ipfileAddr,ipextension,preview_pic
     status.config(text=" ")
     inputBox.delete(0, 'end')
     outputBox.delete(0, 'end')
@@ -183,8 +202,8 @@ def handle_dnd(event):
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
     if ipfileAddr:
         status.config(text="Now select output directory")
-
-
+    preview_pic=ipfileAddr
+    img_preview()
 
 
 top_frame=Frame(root,bg=base_color)
@@ -229,8 +248,6 @@ convertButton.pack()
 status=Label(root,text="Begin -> Select input file")
 status.pack(pady=(10,0),fill=X,ipady=1)
 
-dnd_image=Image.open(preview_pic).resize((277,277), Image.AFFINE)
-dnd_image = ImageTk.PhotoImage(dnd_image)
-dndframe.create_image(80,0, image = dnd_image,anchor=NW)
 
+img_preview()
 root.mainloop()  
