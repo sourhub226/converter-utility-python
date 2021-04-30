@@ -12,11 +12,13 @@ from hdpitkinter import HdpiTk
 
 base_color="#fafafa"
 ipfileAddr=ipextension=opDir=opextension=file_name=fileType=None
+preview_pic="dnd.png"
 
 root = HdpiTk()
+# root=Tk()
 root.title("Convertor Utility") 
 root.minsize(450,420)
-# root.resizable(False,False)
+root.resizable(False,False)
 root.config(bg=base_color)
 
 def resetUI():
@@ -227,18 +229,8 @@ convertButton.pack()
 status=Label(root,text="Begin -> Select input file")
 status.pack(pady=(10,0),fill=X,ipady=1)
 
+dnd_image=Image.open(preview_pic).resize((277,277), Image.AFFINE)
+dnd_image = ImageTk.PhotoImage(dnd_image)
+dndframe.create_image(80,0, image = dnd_image,anchor=NW)
 
-def resize_img(event):
-    global dnd_image,dndframe
-    if event.height<=event.width:
-        dnd_image=Image.open(r"dnd.png").resize((event.height,event.height), Image.AFFINE)
-        dnd_image = ImageTk.PhotoImage(dnd_image)
-        dndframe.create_image((event.width-event.height)/2,0, image = dnd_image,anchor=NW)
-    else:
-        dnd_image=Image.open(r"dnd.png").resize((event.width,event.width), Image.AFFINE)
-        dnd_image = ImageTk.PhotoImage(dnd_image)
-        dndframe.create_image(0,(event.height-event.width)/2, image = dnd_image,anchor=NW)
-
-
-dndframe.bind("<Configure>",resize_img)
 root.mainloop()  
