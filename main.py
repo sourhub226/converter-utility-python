@@ -9,9 +9,10 @@ from PIL import Image
 from threading import Thread
 from PIL import ImageTk
 from hdpitkinter import HdpiTk
+import cv2
 
 base_color="#fafafa"
-ipfileAddr=ipextension=opDir=opextension=file_name=fileType=None
+ipfileAddr=ipextension=opDir=opextension=file_name=fileType=dnd_image=None
 preview_pic="dnd.png"
 
 root = HdpiTk()
@@ -21,10 +22,9 @@ root.minsize(450,420)
 root.resizable(False,False)
 root.config(bg=base_color)
 
-def img_preview():
-    global preview_pic
-    root.update()
-    dnd_image=Image.open(preview_pic)
+
+def create_frame_image():
+    global dnd_image
     scale=dnd_image.width/dnd_image.height
 
     if (dnd_image.width > dnd_image.height):
@@ -38,6 +38,25 @@ def img_preview():
     dnd_image = ImageTk.PhotoImage(dnd_image)
     dndframe.create_image((dndframe.winfo_width()-dnd_image.width())/2,(dndframe.winfo_height()-dnd_image.height())/2, image = dnd_image,anchor=NW)
     dndframe.image=dnd_image
+
+def make_video_thumbnail():
+    global ipfileAddr,dnd_image
+    vcap = cv2.VideoCapture(ipfileAddr)
+    res, im_ar = vcap.read()
+    while im_ar.mean() < res:
+        res, im_ar = vcap.read()
+    im_ar = cv2.resize(im_ar, (1920, 1080), 0, 0, cv2.INTER_LINEAR)
+    color_coverted = cv2.cvtColor(im_ar, cv2.COLOR_BGR2RGB)
+    
+    dnd_image = Image.fromarray(color_coverted)
+    create_frame_image()
+
+
+def img_preview():
+    global preview_pic,dnd_image
+    root.update()
+    dnd_image=Image.open(preview_pic)
+    create_frame_image()
 
 def resetUI():
     global ipfileAddr,opDir,preview_pic
@@ -63,6 +82,7 @@ def decide_preview():
     elif ipextension=="mp3" or ipextension=="wav" or ipextension=="flac" or ipextension=="ogg":
         fileType="audio"
     elif ipextension=="mp4" or ipextension=="avi" or ipextension=="flv" or ipextension=="mov" or ipextension=="mkv" or ipextension=="webm":
+        make_video_thumbnail()
         fileType="video"
 
 def openFile():
