@@ -27,7 +27,7 @@ def create_frame_image():
     global dnd_image
     scale=dnd_image.width/dnd_image.height
 
-    if (dnd_image.width > dnd_image.height):
+    if (dnd_image.width > dnd_image.height+dndframe.winfo_height()):
         img_width=dndframe.winfo_width()
         img_height=img_width/scale
     else:
