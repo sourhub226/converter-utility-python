@@ -4,11 +4,11 @@
 # Convertor Utility
 This python app allows you to convert images, audios and videos from one format to another.
 
-**It also has drag-n-drop support for files.**
-
-GUI made in python using `Tkinter` module.
+**It has drag-n-drop support for files.**
 
 **Now with HiDPI display support!**
+
+GUI made in python using `Tkinter` module.
 
 Conversion made possible using `PIL` library and `ffmpeg`
 
