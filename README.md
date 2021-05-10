@@ -2,7 +2,7 @@
 ![ViewCount](https://views.whatilearened.today/views/github/sourhub226/converter-utility-python.svg)
 
 # Convertor Utility
-This app allows you to convert images, audios and videos from one format to another.
+This python app allows you to convert images, audios and videos from one format to another.
 
 **It also has drag-n-drop support for files.**
 
@@ -12,11 +12,20 @@ GUI made in python using `Tkinter` module.
 
 Conversion made possible using `PIL` library and `ffmpeg`
 
+
+![GUI](preview.PNG)
+
+
 ### Prerequisites 
-* [`hdpitkinter` library](https://pypi.org/project/hdpitkinter/) (For HiDPI display support)
 * [`ffmpeg`](https://ffmpeg.org/download.html) (Make sure the PATH variable for ffmpeg is set correctly)
+
+
+### Python Dependencies
+* [`hdpitkinter` library](https://pypi.org/project/hdpitkinter/) (For HiDPI display support)
 * [`Pillow` module](https://pypi.org/project/Pillow/) (Friendly PIL fork by Alex Clark and Contributors)
 * [`OpenCV`](https://pypi.org/project/opencv-python/)
 
 
-![GUI](preview.PNG)
+Install the above python dependencies using the following command
+
+    pip install -r requirements.txt
