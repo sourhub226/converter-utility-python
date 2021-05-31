@@ -1,71 +1,79 @@
 from tkinter import *
 from tkinter import filedialog
-from tkinter import ttk 
-from tkinter import messagebox   
+from tkinter import ttk
+from tkinter import messagebox
 import os
-os.environ['TKDND_LIBRARY'] = "pytkdnd2.8"
-from tkdnd_wrapper import TkDND 
-from PIL import Image      
+from tkdnd_wrapper import TkDND
+from PIL import Image
 from threading import Thread
 from PIL import ImageTk
 from hdpitkinter import HdpiTk
 import cv2
 
-base_color="#fafafa"
-ipfileAddr=ipextension=opDir=opextension=file_name=fileType=dnd_image=None
-preview_pic="dnd.png"
+os.environ["TKDND_LIBRARY"] = "pytkdnd2.8"
+
+base_color = "#fafafa"
+ipfileAddr = ipextension = opDir = opextension = file_name = fileType = dnd_image = None
+preview_pic = "dnd.png"
 
 root = HdpiTk()
 # root=Tk()
-root.title("Convertor Utility") 
-root.minsize(450,420)
-root.resizable(False,False)
+root.title("Convertor Utility")
+root.minsize(450, 420)
+root.resizable(False, False)
 root.config(bg=base_color)
 
 
 def create_frame_image():
     global dnd_image
-    scale=dnd_image.width/dnd_image.height
+    scale = dnd_image.width / dnd_image.height
 
-    if (dnd_image.width > dnd_image.height+dndframe.winfo_height()):
-        img_width=dndframe.winfo_width()
-        img_height=img_width/scale
+    if dnd_image.width > dnd_image.height + dndframe.winfo_height():
+        img_width = dndframe.winfo_width()
+        img_height = img_width / scale
     else:
-        img_height=dndframe.winfo_height()
-        img_width=img_height*scale
+        img_height = dndframe.winfo_height()
+        img_width = img_height * scale
 
-    dnd_image=dnd_image.resize((int(img_width),int(img_height)), Image.ADAPTIVE)
+    dnd_image = dnd_image.resize((int(img_width), int(img_height)), Image.ADAPTIVE)
     dnd_image = ImageTk.PhotoImage(dnd_image)
-    dndframe.create_image((dndframe.winfo_width()-dnd_image.width())/2,(dndframe.winfo_height()-dnd_image.height())/2, image = dnd_image,anchor=NW)
-    dndframe.image=dnd_image
+    dndframe.create_image(
+        (dndframe.winfo_width() - dnd_image.width()) / 2,
+        (dndframe.winfo_height() - dnd_image.height()) / 2,
+        image=dnd_image,
+        anchor=NW,
+    )
+    dndframe.image = dnd_image
+
 
 def make_video_thumbnail():
-    global ipfileAddr,dnd_image
+    global ipfileAddr, dnd_image
     vcap = cv2.VideoCapture(ipfileAddr)
     res, im_ar = vcap.read()
     while im_ar.mean() < res:
         res, im_ar = vcap.read()
     im_ar = cv2.resize(im_ar, (1920, 1080), 0, 0, cv2.INTER_LINEAR)
     color_coverted = cv2.cvtColor(im_ar, cv2.COLOR_BGR2RGB)
-    
+
     dnd_image = Image.fromarray(color_coverted)
     create_frame_image()
 
 
 def img_preview():
-    global preview_pic,dnd_image
+    global preview_pic, dnd_image
     root.update()
-    dnd_image=Image.open(preview_pic)
+    dnd_image = Image.open(preview_pic)
     create_frame_image()
 
+
 def resetUI():
-    global ipfileAddr,opDir,preview_pic
-    ipfileAddr=opDir=None
-    inputBox.delete(0, 'end')
-    outputBox.delete(0, 'end')
-    preview_pic="dnd.png"
+    global ipfileAddr, opDir, preview_pic
+    ipfileAddr = opDir = None
+    inputBox.delete(0, "end")
+    outputBox.delete(0, "end")
+    preview_pic = "dnd.png"
     img_preview()
-    
+
 
 def update_status():
     print("Converted Successfully")
@@ -74,112 +82,213 @@ def update_status():
 
 
 def decide_preview():
-    global ipfileAddr,ipextension,fileType,preview_pic
+    global ipfileAddr, ipextension, fileType, preview_pic
     if ipextension in ["jpg", "jpeg", "png", "webp", "tiff"]:
-        fileType="image"
-        preview_pic=ipfileAddr
+        fileType = "image"
+        preview_pic = ipfileAddr
         img_preview()
     elif ipextension in ["mp3", "wav", "flac", "ogg"]:
-        fileType="audio"
+        fileType = "audio"
     elif ipextension in ["mp4", "avi", "flv", "mov", "mkv", "webm"]:
         make_video_thumbnail()
-        fileType="video"
+        fileType = "video"
+
 
 def openFile():
-    global ipfileAddr,ipextension,preview_pic,fileType
-    inputBox.delete(0, 'end')
-    outputBox.delete(0, 'end')
-    ipfileAddr=(filedialog.askopenfile(parent=root,mode='rb',title='Choose a file',filetype=[("All files","*.*")])).name
-    inputBox.insert(END,ipfileAddr)
-    ipextension=getExtension(ipfileAddr).lower()
+    global ipfileAddr, ipextension, preview_pic, fileType
+    inputBox.delete(0, "end")
+    outputBox.delete(0, "end")
+    ipfileAddr = (
+        filedialog.askopenfile(
+            parent=root,
+            mode="rb",
+            title="Choose a file",
+            filetype=[("All files", "*.*")],
+        )
+    ).name
+    inputBox.insert(END, ipfileAddr)
+    ipextension = getExtension(ipfileAddr).lower()
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
     if ipfileAddr:
         status.config(text="Now select output directory")
     decide_preview()
-   
+
 
 def getExtension(loc):
     global file_name
     file_name, file_extension = os.path.splitext(loc)
-    file_extension=file_extension[1:]
+    file_extension = file_extension[1:]
     return file_extension
 
+
 def outpFile():  # sourcery no-metrics
-    global ipextension,opDir,opextension,file_name,ipfileAddr,fileType
-    #image
-    if ipextension=="png":
-        fileOptions = [("jpeg files","*.jpg"),("webp files","*.webp"),("ico files","*.ico"),("tiff files","*.tiff"),('All Files', '*.*')]
-        
-    elif ipextension=="jpg" or ipextension=="jpeg":
-        fileOptions = [("png files","*.png"),("webp files","*.webp"),("tiff files","*.tiff"),('All Files', '*.*')]
-        
-    elif ipextension=="webp":
-        fileOptions = [("png files","*.png"),("jpeg files","*.jpg"),("ico files","*.ico"),("tiff files","*.tiff"),('All Files', '*.*')]
-        
-    elif ipextension=="tiff":
-        fileOptions = [("png files","*.png"),("jpeg files","*.jpg"),("ico files","*.ico"),("webp files","*.webp"),('All Files', '*.*')]
-        
+    global ipextension, opDir, opextension, file_name, ipfileAddr, fileType
+    # image
+    if ipextension == "png":
+        fileOptions = [
+            ("jpeg files", "*.jpg"),
+            ("webp files", "*.webp"),
+            ("ico files", "*.ico"),
+            ("tiff files", "*.tiff"),
+            ("All Files", "*.*"),
+        ]
 
-    #audio
-    elif ipextension=="mp3":
-        fileOptions = [("wav files","*.wav"),("flac files","*.flac"),("ogg files","*.ogg"),('All Files', '*.*')]
-        
-    elif ipextension=="wav":
-        fileOptions = [("mp3 files","*.mp3"),("flac files","*.flac"),("ogg files","*.ogg"),('All Files', '*.*')]
-        
-    elif ipextension=="flac":
-        fileOptions = [("mp3 files","*.mp3"),("wav files","*.wav"),("ogg files","*.ogg"),('All Files', '*.*')]
-        
-    elif ipextension=="ogg":
-        fileOptions = [("mp3 files","*.mp3"),("wav files","*.wav"),("flac files","*.flac"),('All Files', '*.*')]
-        
+    elif ipextension == "jpg" or ipextension == "jpeg":
+        fileOptions = [
+            ("png files", "*.png"),
+            ("webp files", "*.webp"),
+            ("tiff files", "*.tiff"),
+            ("All Files", "*.*"),
+        ]
 
-    #video
-    elif ipextension=="mp4":
-        fileOptions = [("avi files","*.avi"),("flv files","*.flv"),("mov files","*.mov"),("mp3 files","*.mp3"),("mkv files","*.mkv"),("webm files","*.webm"),('All Files', '*.*')]
-        
-    elif ipextension=="avi":
-        fileOptions = [("mp4 files","*.mp4"),("flv files","*.flv"),("mov files","*.mov"),("mkv files","*.mkv"),("webm files","*.webm"),('All Files', '*.*')]
-        
-    elif ipextension=="flv":
-        fileOptions = [("mp4 files","*.mp4"),("avi files","*.avi"),("mov files","*.mov"),("mkv files","*.mkv"),("webm files","*.webm"),('All Files', '*.*')]
-        
-    elif ipextension=="mov":
-        fileOptions = [("mp4 files","*.mp4"),("avi files","*.avi"),("flv files","*.flv"),("mkv files","*.mkv"),("webm files","*.webm"),('All Files', '*.*')]
-        
-    elif ipextension=="mkv":
-        fileOptions = [("mp4 files","*.mp4"),("avi files","*.avi"),("flv files","*.flv"),("mov files","*.mov"),("webm files","*.webm"),('All Files', '*.*')]
-        
-    elif ipextension=="webm":
-        fileOptions = [("mp4 files","*.mp4"),("avi files","*.avi"),("flv files","*.flv"),("mov files","*.mov"),("mkv files","*.mkv"),('All Files', '*.*')]
-        
+    elif ipextension == "webp":
+        fileOptions = [
+            ("png files", "*.png"),
+            ("jpeg files", "*.jpg"),
+            ("ico files", "*.ico"),
+            ("tiff files", "*.tiff"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "tiff":
+        fileOptions = [
+            ("png files", "*.png"),
+            ("jpeg files", "*.jpg"),
+            ("ico files", "*.ico"),
+            ("webp files", "*.webp"),
+            ("All Files", "*.*"),
+        ]
+
+    # audio
+    elif ipextension == "mp3":
+        fileOptions = [
+            ("wav files", "*.wav"),
+            ("flac files", "*.flac"),
+            ("ogg files", "*.ogg"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "wav":
+        fileOptions = [
+            ("mp3 files", "*.mp3"),
+            ("flac files", "*.flac"),
+            ("ogg files", "*.ogg"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "flac":
+        fileOptions = [
+            ("mp3 files", "*.mp3"),
+            ("wav files", "*.wav"),
+            ("ogg files", "*.ogg"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "ogg":
+        fileOptions = [
+            ("mp3 files", "*.mp3"),
+            ("wav files", "*.wav"),
+            ("flac files", "*.flac"),
+            ("All Files", "*.*"),
+        ]
+
+    # video
+    elif ipextension == "mp4":
+        fileOptions = [
+            ("avi files", "*.avi"),
+            ("flv files", "*.flv"),
+            ("mov files", "*.mov"),
+            ("mp3 files", "*.mp3"),
+            ("mkv files", "*.mkv"),
+            ("webm files", "*.webm"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "avi":
+        fileOptions = [
+            ("mp4 files", "*.mp4"),
+            ("flv files", "*.flv"),
+            ("mov files", "*.mov"),
+            ("mkv files", "*.mkv"),
+            ("webm files", "*.webm"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "flv":
+        fileOptions = [
+            ("mp4 files", "*.mp4"),
+            ("avi files", "*.avi"),
+            ("mov files", "*.mov"),
+            ("mkv files", "*.mkv"),
+            ("webm files", "*.webm"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "mov":
+        fileOptions = [
+            ("mp4 files", "*.mp4"),
+            ("avi files", "*.avi"),
+            ("flv files", "*.flv"),
+            ("mkv files", "*.mkv"),
+            ("webm files", "*.webm"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "mkv":
+        fileOptions = [
+            ("mp4 files", "*.mp4"),
+            ("avi files", "*.avi"),
+            ("flv files", "*.flv"),
+            ("mov files", "*.mov"),
+            ("webm files", "*.webm"),
+            ("All Files", "*.*"),
+        ]
+
+    elif ipextension == "webm":
+        fileOptions = [
+            ("mp4 files", "*.mp4"),
+            ("avi files", "*.avi"),
+            ("flv files", "*.flv"),
+            ("mov files", "*.mov"),
+            ("mkv files", "*.mkv"),
+            ("All Files", "*.*"),
+        ]
 
     else:
-        messagebox.showerror(title="Error",message="Conversion not possible.\nFile type not supported.")
+        messagebox.showerror(
+            title="Error", message="Conversion not possible.\nFile type not supported."
+        )
         resetUI()
         return
-    outputBox.delete(0, 'end')
-    
-    
-    file_name=file_name[::-1]
-    file_name = file_name[file_name.find("/"):]
-    file_name=file_name[::-1]
-    
-    base=os.path.basename(ipfileAddr)
-    base_name=os.path.splitext(base)[0]
-    opDir=(filedialog.asksaveasfilename(parent=root,title='Convert as',filetypes=fileOptions,defaultextension = fileOptions,initialdir=file_name,initialfile=base_name))
-    outputBox.insert(END,opDir)
-    opextension=getExtension(opDir)
+    outputBox.delete(0, "end")
+
+    file_name = file_name[::-1]
+    file_name = file_name[file_name.find("/") :]
+    file_name = file_name[::-1]
+
+    base = os.path.basename(ipfileAddr)
+    base_name = os.path.splitext(base)[0]
+    opDir = filedialog.asksaveasfilename(
+        parent=root,
+        title="Convert as",
+        filetypes=fileOptions,
+        defaultextension=fileOptions,
+        initialdir=file_name,
+        initialfile=base_name,
+    )
+    outputBox.insert(END, opDir)
+    opextension = getExtension(opDir)
     print(f'Output File: "{opDir}"\nExt: {opextension}')
     if opDir:
         status.config(text="Press convert")
 
+
 def startConvert():
-    global ipfileAddr,ipextension,opDir,opextension,fileType
+    global ipfileAddr, ipextension, opDir, opextension, fileType
     if ipfileAddr:
         if opDir:
             print(f"\nConverting from {ipextension} to {opextension}")
-            if fileType=="image":
+            if fileType == "image":
                 Thread(target=convertImage).start()
             elif fileType in ["audio", "video"]:
                 Thread(target=convertAudio_Video).start()
@@ -190,29 +299,42 @@ def startConvert():
         status.config(text="Please select input file")
         return
 
+
 def convertAudio_Video():
-    global ipfileAddr,ipextension,opDir,opextension
+    global ipfileAddr, ipextension, opDir, opextension
     status.config(text="Converting...")
     os.system(f'cmd /c ffmpeg -i "{ipfileAddr}" "{opDir}"')
     update_status()
     return
 
+
 def convertImage():
-    global ipfileAddr,ipextension,opDir,opextension
+    global ipfileAddr, ipextension, opDir, opextension
     status.config(text="Converting...")
-    if opextension=="jpg":
+    if opextension == "jpg":
         image = Image.open(ipfileAddr)
-        if image.mode in ('RGBA', 'LA'):
-            fill_color = '#ffffff'
+        if image.mode in ("RGBA", "LA"):
+            fill_color = "#ffffff"
             background = Image.new(image.mode[:-1], image.size, fill_color)
             background.paste(image, image.split()[-1])
             image = background
         image.save(opDir, "JPEG", quality=95)
 
-    elif opextension=="ico":
+    elif opextension == "ico":
         img = Image.open(ipfileAddr)
-        new_img=img.resize((256, 256))
-        icon_sizes = [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (72, 72),(80, 80),(96, 96),(128, 128), (256, 256)]
+        new_img = img.resize((256, 256))
+        icon_sizes = [
+            (16, 16),
+            (24, 24),
+            (32, 32),
+            (48, 48),
+            (64, 64),
+            (72, 72),
+            (80, 80),
+            (96, 96),
+            (128, 128),
+            (256, 256),
+        ]
         new_img.save(opDir, sizes=icon_sizes)
     else:
         image = Image.open(ipfileAddr)
@@ -222,61 +344,63 @@ def convertImage():
 
 
 def handle_dnd(event):
-    global ipfileAddr,ipextension,preview_pic
+    global ipfileAddr, ipextension, preview_pic
     status.config(text=" ")
-    inputBox.delete(0, 'end')
-    outputBox.delete(0, 'end')
-    inputBox.insert(0, (event.data).replace('{',"").replace('}',""))
-    ipfileAddr=inputBox.get()
-    ipextension=getExtension(inputBox.get()).lower()
+    inputBox.delete(0, "end")
+    outputBox.delete(0, "end")
+    inputBox.insert(0, (event.data).replace("{", "").replace("}", ""))
+    ipfileAddr = inputBox.get()
+    ipextension = getExtension(inputBox.get()).lower()
     print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
     if ipfileAddr:
         status.config(text="Now select output directory")
     decide_preview()
 
 
-top_frame=Frame(root,bg=base_color)
-top_frame.pack(side=TOP,fill=X,padx=10,pady=10)
+top_frame = Frame(root, bg=base_color)
+top_frame.pack(side=TOP, fill=X, padx=10, pady=10)
 
-inputLabel=Label(top_frame,text="Input File",bg=base_color)
+inputLabel = Label(top_frame, text="Input File", bg=base_color)
 inputLabel.pack(side=LEFT)
 
 inputBox = ttk.Entry(top_frame)
 # root.update()
-inputBox.pack(side=LEFT,fill=X,expand=True,padx=5,ipady=1)
+inputBox.pack(side=LEFT, fill=X, expand=True, padx=5, ipady=1)
 inputBox.focus_set()
 
-browseButton1=ttk.Button(top_frame,text="Browse",command=openFile)
+browseButton1 = ttk.Button(top_frame, text="Browse", command=openFile)
 browseButton1.pack(side=LEFT)
 
 
-dndframe = Canvas(root, highlightthickness=1, relief='solid',highlightbackground="#c5c5c5")
-dndframe.pack(fill=BOTH,expand=True,padx=10)
+dndframe = Canvas(
+    root, highlightthickness=1, relief="solid", highlightbackground="#c5c5c5"
+)
+dndframe.pack(fill=BOTH, expand=True, padx=10)
 
 dnd = TkDND(root)
-dnd.bindtarget(dndframe, handle_dnd, 'text/uri-list') 
+dnd.bindtarget(dndframe, handle_dnd, "text/uri-list")
 
 
-bottom_frame=Frame(root,bg=base_color)
-bottom_frame.pack(fill=X,padx=10,pady=10)
+bottom_frame = Frame(root, bg=base_color)
+bottom_frame.pack(fill=X, padx=10, pady=10)
 
-outputLabel=Label(bottom_frame,text="Output File",bg=base_color)
+outputLabel = Label(bottom_frame, text="Output File", bg=base_color)
 outputLabel.pack(side=LEFT)
 
 outputBox = ttk.Entry(bottom_frame)
 # root.update()
-outputBox.pack(side=LEFT,fill=X,expand=True,padx=5,ipady=1)
+outputBox.pack(side=LEFT, fill=X, expand=True, padx=5, ipady=1)
 
-browseButton2=ttk.Button(bottom_frame,text="Browse",command=outpFile)
+browseButton2 = ttk.Button(bottom_frame, text="Browse", command=outpFile)
 browseButton2.pack(side=LEFT)
 
 
-convertButton=ttk.Button(root,text="Convert",command=startConvert)
+convertButton = ttk.Button(root, text="Convert", command=startConvert)
 convertButton.pack()
 
-status=Label(root,text="Begin -> Select input file")
-status.pack(pady=(10,0),fill=X,ipady=1)
+status = Label(root, text="Begin -> Select input file")
+status.pack(pady=(10, 0), fill=X, ipady=1)
 
 
 img_preview()
-root.mainloop()  
+root.mainloop()
