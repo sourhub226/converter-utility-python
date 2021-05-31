@@ -47,9 +47,8 @@ class TkDND(object):
     def drag(self, window, actions=None, descriptions=None,
             cursorwin=None, callback=None):
         cmd = None
-        if cursorwin is not None:
-            if callback is not None:
-                cmd = self._prepare_tkdnd_func(callback)
+        if cursorwin is not None and callback is not None:
+            cmd = self._prepare_tkdnd_func(callback)
         self.tk.call('dnd', 'drag', window, actions, descriptions,
                 cursorwin, cmd)
 
@@ -60,8 +59,7 @@ class TkDND(object):
 
     def _prepare_tkdnd_func(self, callback):
         funcid = self.master.register(callback, self._dndsubstitute)
-        cmd = ('%s %s' % (funcid, self._subst_format_str))
-        return cmd
+        return ('%s %s' % (funcid, self._subst_format_str))
 
     def _dndsubstitute(self, *args):
         if len(args) != len(self._subst_format):

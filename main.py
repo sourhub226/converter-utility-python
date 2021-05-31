@@ -75,13 +75,13 @@ def update_status():
 
 def decide_preview():
     global ipfileAddr,ipextension,fileType,preview_pic
-    if ipextension=="jpg" or ipextension=="jpeg" or ipextension=="png" or ipextension=="webp" or ipextension=="tiff":
+    if ipextension in ["jpg", "jpeg", "png", "webp", "tiff"]:
         fileType="image"
         preview_pic=ipfileAddr
         img_preview()
-    elif ipextension=="mp3" or ipextension=="wav" or ipextension=="flac" or ipextension=="ogg":
+    elif ipextension in ["mp3", "wav", "flac", "ogg"]:
         fileType="audio"
-    elif ipextension=="mp4" or ipextension=="avi" or ipextension=="flv" or ipextension=="mov" or ipextension=="mkv" or ipextension=="webm":
+    elif ipextension in ["mp4", "avi", "flv", "mov", "mkv", "webm"]:
         make_video_thumbnail()
         fileType="video"
 
@@ -104,7 +104,7 @@ def getExtension(loc):
     file_extension=file_extension[1:]
     return file_extension
 
-def outpFile():
+def outpFile():  # sourcery no-metrics
     global ipextension,opDir,opextension,file_name,ipfileAddr,fileType
     #image
     if ipextension=="png":
@@ -181,9 +181,7 @@ def startConvert():
             print(f"\nConverting from {ipextension} to {opextension}")
             if fileType=="image":
                 Thread(target=convertImage).start()
-            elif fileType=="audio":
-                Thread(target=convertAudio_Video).start()
-            elif fileType=="video":
+            elif fileType in ["audio", "video"]:
                 Thread(target=convertAudio_Video).start()
         else:
             status.config(text="Please select output directory")
@@ -203,9 +201,9 @@ def convertImage():
     global ipfileAddr,ipextension,opDir,opextension
     status.config(text="Converting...")
     if opextension=="jpg":
-        fill_color = '#ffffff'  
         image = Image.open(ipfileAddr)
         if image.mode in ('RGBA', 'LA'):
+            fill_color = '#ffffff'
             background = Image.new(image.mode[:-1], image.size, fill_color)
             background.paste(image, image.split()[-1])
             image = background
