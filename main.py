@@ -1,20 +1,31 @@
-from tkinter import *
-from tkinter import filedialog
-from tkinter import ttk
-from tkinter import messagebox
 import os
+from tkinter import Canvas, Frame, Label, filedialog, ttk, messagebox
+from tkinter.constants import BOTH, END, LEFT, NW, TOP, X
 from tkdnd_wrapper import TkDND
-from PIL import Image
+from PIL import Image, ImageTk
 from threading import Thread
-from PIL import ImageTk
 from hdpitkinter import HdpiTk
 import cv2
+import subprocess
 
 os.environ["TKDND_LIBRARY"] = "pytkdnd2.8"
 
 base_color = "#fafafa"
-ipfileAddr = ipextension = opDir = opextension = file_name = fileType = dnd_image = None
-preview_pic = "dnd.png"
+
+
+class Global:
+    def __init__(self):
+        self.ipfileAddr = None
+        self.ipextension = None
+        self.opDir = None
+        self.opextension = None
+        self.file_name = None
+        self.fileType = None
+        self.dnd_image = None
+        self.preview_pic = "dnd.png"
+
+
+Global = Global()
 
 root = HdpiTk()
 # root=Tk()
@@ -25,53 +36,55 @@ root.config(bg=base_color)
 
 
 def create_frame_image():
-    global dnd_image
-    scale = dnd_image.width / dnd_image.height
+    # global dnd_image
+    scale = Global.dnd_image.width / Global.dnd_image.height
 
-    if dnd_image.width > dnd_image.height + dndframe.winfo_height():
+    if Global.dnd_image.width > Global.dnd_image.height + dndframe.winfo_height():
         img_width = dndframe.winfo_width()
         img_height = img_width / scale
     else:
         img_height = dndframe.winfo_height()
         img_width = img_height * scale
 
-    dnd_image = dnd_image.resize((int(img_width), int(img_height)), Image.ADAPTIVE)
-    dnd_image = ImageTk.PhotoImage(dnd_image)
+    Global.dnd_image = Global.dnd_image.resize(
+        (int(img_width), int(img_height)), Image.ADAPTIVE
+    )
+    Global.dnd_image = ImageTk.PhotoImage(Global.dnd_image)
     dndframe.create_image(
-        (dndframe.winfo_width() - dnd_image.width()) / 2,
-        (dndframe.winfo_height() - dnd_image.height()) / 2,
-        image=dnd_image,
+        (dndframe.winfo_width() - Global.dnd_image.width()) / 2,
+        (dndframe.winfo_height() - Global.dnd_image.height()) / 2,
+        image=Global.dnd_image,
         anchor=NW,
     )
-    dndframe.image = dnd_image
+    dndframe.image = Global.dnd_image
 
 
 def make_video_thumbnail():
-    global ipfileAddr, dnd_image
-    vcap = cv2.VideoCapture(ipfileAddr)
+    # global ipfileAddr, dnd_image
+    vcap = cv2.VideoCapture(Global.ipfileAddr)
     res, im_ar = vcap.read()
     while im_ar.mean() < res:
         res, im_ar = vcap.read()
     im_ar = cv2.resize(im_ar, (1920, 1080), 0, 0, cv2.INTER_LINEAR)
     color_coverted = cv2.cvtColor(im_ar, cv2.COLOR_BGR2RGB)
 
-    dnd_image = Image.fromarray(color_coverted)
+    Global.dnd_image = Image.fromarray(color_coverted)
     create_frame_image()
 
 
 def img_preview():
-    global preview_pic, dnd_image
+    # global preview_pic, dnd_image
     root.update()
-    dnd_image = Image.open(preview_pic)
+    Global.dnd_image = Image.open(Global.preview_pic)
     create_frame_image()
 
 
 def resetUI():
-    global ipfileAddr, opDir, preview_pic
-    ipfileAddr = opDir = None
+    # global ipfileAddr, opDir, preview_pic
+    Global.ipfileAddr = Global.opDir = None
     inputBox.delete(0, "end")
     outputBox.delete(0, "end")
-    preview_pic = "dnd.png"
+    Global.preview_pic = "dnd.png"
     img_preview()
 
 
@@ -82,23 +95,23 @@ def update_status():
 
 
 def decide_preview():
-    global ipfileAddr, ipextension, fileType, preview_pic
-    if ipextension in ["jpg", "jpeg", "png", "webp", "tiff"]:
-        fileType = "image"
-        preview_pic = ipfileAddr
+    # global ipfileAddr, ipextension, fileType, preview_pic
+    if Global.ipextension in ["jpg", "jpeg", "png", "webp", "tiff"]:
+        Global.fileType = "image"
+        Global.preview_pic = Global.ipfileAddr
         img_preview()
-    elif ipextension in ["mp3", "wav", "flac", "ogg"]:
-        fileType = "audio"
-    elif ipextension in ["mp4", "avi", "flv", "mov", "mkv", "webm"]:
+    elif Global.ipextension in ["mp3", "wav", "flac", "ogg"]:
+        Global.fileType = "audio"
+    elif Global.ipextension in ["mp4", "avi", "flv", "mov", "mkv", "webm"]:
+        Global.fileType = "video"
         make_video_thumbnail()
-        fileType = "video"
 
 
 def openFile():
-    global ipfileAddr, ipextension, preview_pic, fileType
+    # global ipfileAddr, ipextension, preview_pic, fileType
     inputBox.delete(0, "end")
     outputBox.delete(0, "end")
-    ipfileAddr = (
+    Global.ipfileAddr = (
         filedialog.askopenfile(
             parent=root,
             mode="rb",
@@ -106,25 +119,25 @@ def openFile():
             filetype=[("All files", "*.*")],
         )
     ).name
-    inputBox.insert(END, ipfileAddr)
-    ipextension = getExtension(ipfileAddr).lower()
-    print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
-    if ipfileAddr:
+    inputBox.insert(END, Global.ipfileAddr)
+    Global.ipextension = getExtension(Global.ipfileAddr).lower()
+    print(f'Input File: "{Global.ipfileAddr}"\nExt: {Global.ipextension}')
+    if Global.ipfileAddr:
         status.config(text="Now select output directory")
     decide_preview()
 
 
 def getExtension(loc):
-    global file_name
-    file_name, file_extension = os.path.splitext(loc)
+    # global file_name
+    Global.file_name, file_extension = os.path.splitext(loc)
     file_extension = file_extension[1:]
     return file_extension
 
 
 def outpFile():  # sourcery no-metrics
-    global ipextension, opDir, opextension, file_name, ipfileAddr, fileType
+    # global ipextension, opDir, opextension, file_name, ipfileAddr, fileType
     # image
-    if ipextension == "png":
+    if Global.ipextension == "png":
         fileOptions = [
             ("jpeg files", "*.jpg"),
             ("webp files", "*.webp"),
@@ -133,7 +146,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "jpg" or ipextension == "jpeg":
+    elif Global.ipextension in ["jpg", "jpeg"]:
         fileOptions = [
             ("png files", "*.png"),
             ("webp files", "*.webp"),
@@ -141,7 +154,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "webp":
+    elif Global.ipextension == "webp":
         fileOptions = [
             ("png files", "*.png"),
             ("jpeg files", "*.jpg"),
@@ -150,7 +163,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "tiff":
+    elif Global.ipextension == "tiff":
         fileOptions = [
             ("png files", "*.png"),
             ("jpeg files", "*.jpg"),
@@ -159,8 +172,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    # audio
-    elif ipextension == "mp3":
+    elif Global.ipextension == "mp3":
         fileOptions = [
             ("wav files", "*.wav"),
             ("flac files", "*.flac"),
@@ -168,7 +180,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "wav":
+    elif Global.ipextension == "wav":
         fileOptions = [
             ("mp3 files", "*.mp3"),
             ("flac files", "*.flac"),
@@ -176,7 +188,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "flac":
+    elif Global.ipextension == "flac":
         fileOptions = [
             ("mp3 files", "*.mp3"),
             ("wav files", "*.wav"),
@@ -184,7 +196,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "ogg":
+    elif Global.ipextension == "ogg":
         fileOptions = [
             ("mp3 files", "*.mp3"),
             ("wav files", "*.wav"),
@@ -192,8 +204,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    # video
-    elif ipextension == "mp4":
+    elif Global.ipextension == "mp4":
         fileOptions = [
             ("avi files", "*.avi"),
             ("flv files", "*.flv"),
@@ -204,7 +215,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "avi":
+    elif Global.ipextension == "avi":
         fileOptions = [
             ("mp4 files", "*.mp4"),
             ("flv files", "*.flv"),
@@ -214,7 +225,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "flv":
+    elif Global.ipextension == "flv":
         fileOptions = [
             ("mp4 files", "*.mp4"),
             ("avi files", "*.avi"),
@@ -224,7 +235,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "mov":
+    elif Global.ipextension == "mov":
         fileOptions = [
             ("mp4 files", "*.mp4"),
             ("avi files", "*.avi"),
@@ -234,7 +245,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "mkv":
+    elif Global.ipextension == "mkv":
         fileOptions = [
             ("mp4 files", "*.mp4"),
             ("avi files", "*.avi"),
@@ -244,7 +255,7 @@ def outpFile():  # sourcery no-metrics
             ("All Files", "*.*"),
         ]
 
-    elif ipextension == "webm":
+    elif Global.ipextension == "webm":
         fileOptions = [
             ("mp4 files", "*.mp4"),
             ("avi files", "*.avi"),
@@ -262,35 +273,35 @@ def outpFile():  # sourcery no-metrics
         return
     outputBox.delete(0, "end")
 
-    file_name = file_name[::-1]
-    file_name = file_name[file_name.find("/") :]
-    file_name = file_name[::-1]
+    Global.file_name = Global.file_name[::-1]
+    Global.file_name = Global.file_name[Global.file_name.find("/") :]
+    Global.file_name = Global.file_name[::-1]
 
-    base = os.path.basename(ipfileAddr)
+    base = os.path.basename(Global.ipfileAddr)
     base_name = os.path.splitext(base)[0]
-    opDir = filedialog.asksaveasfilename(
+    Global.opDir = filedialog.asksaveasfilename(
         parent=root,
         title="Convert as",
         filetypes=fileOptions,
         defaultextension=fileOptions,
-        initialdir=file_name,
+        initialdir=Global.file_name,
         initialfile=base_name,
     )
-    outputBox.insert(END, opDir)
-    opextension = getExtension(opDir)
-    print(f'Output File: "{opDir}"\nExt: {opextension}')
-    if opDir:
+    outputBox.insert(END, Global.opDir)
+    Global.opextension = getExtension(Global.opDir)
+    print(f'Output File: "{Global.opDir}"\nExt: {Global.opextension}')
+    if Global.opDir:
         status.config(text="Press convert")
 
 
 def startConvert():
-    global ipfileAddr, ipextension, opDir, opextension, fileType
-    if ipfileAddr:
-        if opDir:
-            print(f"\nConverting from {ipextension} to {opextension}")
-            if fileType == "image":
+    # global ipfileAddr, ipextension, opDir, opextension, fileType
+    if Global.ipfileAddr:
+        if Global.opDir:
+            print(f"\nConverting from {Global.ipextension} to {Global.opextension}")
+            if Global.fileType == "image":
                 Thread(target=convertImage).start()
-            elif fileType in ["audio", "video"]:
+            elif Global.fileType in ["audio", "video"]:
                 Thread(target=convertAudio_Video).start()
         else:
             status.config(text="Please select output directory")
@@ -301,27 +312,27 @@ def startConvert():
 
 
 def convertAudio_Video():
-    global ipfileAddr, ipextension, opDir, opextension
+    # global ipfileAddr, ipextension, opDir, opextension
     status.config(text="Converting...")
-    os.system(f'cmd /c ffmpeg -i "{ipfileAddr}" "{opDir}"')
+    # os.system(f'cmd /c ffmpeg -i "{ipfileAddr}" "{opDir}"')
+    subprocess.call(f'ffmpeg -i "{Global.ipfileAddr}" -y "{Global.opDir}"', shell=False)
     update_status()
-    return
 
 
 def convertImage():
-    global ipfileAddr, ipextension, opDir, opextension
+    # global ipfileAddr, ipextension, opDir, opextension
     status.config(text="Converting...")
-    if opextension == "jpg":
-        image = Image.open(ipfileAddr)
+    if Global.opextension == "jpg":
+        image = Image.open(Global.ipfileAddr).convert("RGB")
         if image.mode in ("RGBA", "LA"):
             fill_color = "#ffffff"
             background = Image.new(image.mode[:-1], image.size, fill_color)
             background.paste(image, image.split()[-1])
             image = background
-        image.save(opDir, "JPEG", quality=95)
+        image.save(Global.opDir, "JPEG", quality=95)
 
-    elif opextension == "ico":
-        img = Image.open(ipfileAddr)
+    elif Global.opextension == "ico":
+        img = Image.open(Global.ipfileAddr)
         new_img = img.resize((256, 256))
         icon_sizes = [
             (16, 16),
@@ -335,24 +346,23 @@ def convertImage():
             (128, 128),
             (256, 256),
         ]
-        new_img.save(opDir, sizes=icon_sizes)
+        new_img.save(Global.opDir, sizes=icon_sizes)
     else:
-        image = Image.open(ipfileAddr)
-        image.save(opDir)
+        image = Image.open(Global.ipfileAddr)
+        image.save(Global.opDir)
     update_status()
-    return
 
 
 def handle_dnd(event):
-    global ipfileAddr, ipextension, preview_pic
+    # global ipfileAddr, ipextension, preview_pic
     status.config(text=" ")
     inputBox.delete(0, "end")
     outputBox.delete(0, "end")
     inputBox.insert(0, (event.data).replace("{", "").replace("}", ""))
-    ipfileAddr = inputBox.get()
-    ipextension = getExtension(inputBox.get()).lower()
-    print(f'Input File: "{ipfileAddr}"\nExt: {ipextension}')
-    if ipfileAddr:
+    Global.ipfileAddr = inputBox.get()
+    Global.ipextension = getExtension(inputBox.get()).lower()
+    print(f'Input File: "{Global.ipfileAddr}"\nExt: {Global.ipextension}')
+    if Global.ipfileAddr:
         status.config(text="Now select output directory")
     decide_preview()
 
