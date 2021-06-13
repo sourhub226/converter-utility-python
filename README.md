@@ -6,23 +6,23 @@
 # Convertor Utility
 This python app allows you to convert images, audios and videos from one format to another.
 
-**It has drag-n-drop support for files.**
-
-**Now with HiDPI display support!**
-
 GUI made in python using `Tkinter` module.
 
-Conversion made possible using `PIL` library and `ffmpeg`
+### Features:
+* Drag-n-Drop functionality for files.
+* HiDPI display support.
+* Image conversion using `PIL` library.
+* Audio and Video conversion using `ffmpeg`.
 
 
 ![GUI](preview.PNG)
 
 
-### Prerequisites 
+### Prerequisites: 
 * [`ffmpeg`](https://ffmpeg.org/download.html) (Make sure the PATH variable for ffmpeg is set correctly)
 
 
-### Python Dependencies
+### Python Dependencies:
 * [`hdpitkinter` library](https://pypi.org/project/hdpitkinter/) (For HiDPI display support)
 * [`Pillow` module](https://pypi.org/project/Pillow/) (Friendly PIL fork by Alex Clark and Contributors)
 * [`OpenCV`](https://pypi.org/project/opencv-python/)
@@ -31,3 +31,7 @@ Conversion made possible using `PIL` library and `ffmpeg`
 Install the above python dependencies using the following command
 
     pip install -r requirements.txt
+    
+    
+### Known issues:
+* Drag-n-Drop functionality not working when script is run through cmd **(as admin)** on Windows.
