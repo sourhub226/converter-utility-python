@@ -32,7 +32,7 @@ GUI made in python using `Tkinter` module.
 
 -   [`hdpitkinter` library](https://pypi.org/project/hdpitkinter/) (For HiDPI display support)
 -   [`Pillow` module](https://pypi.org/project/Pillow/) (Friendly PIL fork by Alex Clark and Contributors)
--   [`OpenCV`](https://pypi.org/project/opencv-python/)
+-   [`OpenCV` library](https://pypi.org/project/opencv-python/)
 
 Install the above python dependencies using the following command
 
